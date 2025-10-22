@@ -41,22 +41,25 @@ void add_contact(Contact *new_contact){
 
     // get the name
     char name[50];
-    printf("Name: \n" );
+    printf("Name: " );
     fgets(name, sizeof(name), stdin);
+    // scanf("%s", &name);
     remove_newline(name);
     strcpy(new_contact[index].name, name);
 
     // get the phone number
     char phone_num[50];
-    printf("Phone Number: \n" );
+    printf("Phone Number: " );
     fgets(phone_num, sizeof( phone_num), stdin);
+    // scanf("%s", &phone_num);
     remove_newline(phone_num);
     strcpy(new_contact[index].phone_number,  phone_num);
 
     // get the note
     char note[50];
-    printf("Note: \n");
+    printf("Note: ");
     fgets(note, sizeof(note), stdin);
+    // scanf("%s", &note);
     remove_newline(note);
     strcpy(new_contact[index].note, note);
 
@@ -68,9 +71,11 @@ void add_contact(Contact *new_contact){
 void list_contact(Contact *contact) {
     printf("xxx CONTACT LIST xxx\n");
     for (int i = 0; i < global_id; i++) {
-        printf("%d - ID: %d | Name: %s | Phone: %s | Note: %s\n",
-               i + 1, contact[i].id, contact[i].name,
+        printf("---------------------------------\n");
+        printf("%d- %s | %s | Note: %s\n",
+               i + 1, contact[i].name,
                contact[i].phone_number, contact[i].note);
+        printf("---------------------------------\n");
     }
 }
 
@@ -82,7 +87,21 @@ int main(){
     strcpy(contact_array[0].name, "James");
     strcpy(contact_array[0].note, "James Charles the gay TikToker");
     strcpy(contact_array[0].phone_number, "+1 123 321 123");
-    // menu();
-    list_contact(contact_array);
+    menu();
+    int user_input;
+    printf("(select a number and hit enter) >>>: ");
+    scanf("%d", &user_input);
+    getchar();
+    switch (user_input)
+    {
+    case 1:
+        // add contact
+        add_contact(contact_array);
+        break;
+    
+    default:
+        break;
+    }
+    // list_contact(contact_array);
     return 0;
 }
