@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <string.h>
-#include <windows.h>
+#include <windows.h> // Used for the Sleep() function in progress_bar
 
-int global_id = 0;     // id for each contact
-#define MAX_CONTACTS 1 // maximum numbers of contacts allowed!
+// Global constants and variables
+int global_id = 0;            // id for each contact
+#define MAX_CONTACTS 10       // maximum numbers of contacts allowed!
+#define INPUT_BUFFER_SIZE 100 // Buffer size for robust input
+
 // Contact Struct
 typedef struct
 {
@@ -16,10 +19,15 @@ typedef struct
 // to remove the new line at the end of the inputs.
 void remove_newline(char *str)
 {
+    // printf("Remove line fun has just been called for: ");
     size_t len = strlen(str);
+    // printf("%d is the thing", len);
     if (len > 0 && str[len - 1] == '\n')
     {
         str[len - 1] = '\0';
+        // if(str[len - 1] == '\0'){
+        //     printf("done"); // BUG: This line is redundant and prints "done" unexpectedly.
+        // }
     }
 }
 
@@ -31,10 +39,11 @@ void progress_bar(int length)
     {
         printf("#");
         fflush(stdout); // force it to print immediately
-        Sleep(2);       // wait 100 milliseconds per step
+        Sleep(2);       // wait 2 milliseconds per step
     }
     printf("] Done!\n");
 }
+
 // Main Menu
 void menu()
 {
@@ -57,6 +66,9 @@ void assignID(Contact *contact)
 // Add Contact
 void add_contact(Contact *new_contact)
 {
+    // large buffer for all temporary input reading
+    char input_buffer[INPUT_BUFFER_SIZE];
+
     if (global_id >= MAX_CONTACTS)
     {
         printf("[-] ERROR, MAXIMUM %d CONTACTS\n", MAX_CONTACTS);
@@ -68,32 +80,35 @@ void add_contact(Contact *new_contact)
     assignID(&new_contact[index]);
 
     // get the name
-    char name[50];
     printf("Name: ");
-    fgets(name, sizeof(name), stdin);
-    // scanf("%s", &name);
-    remove_newline(new_contact[index].name);
-    strcpy(new_contact[index].name, name);
+    fgets(input_buffer, sizeof(new_contact[index].name), stdin);
+
+    remove_newline(input_buffer);
+
+    strncpy(new_contact[index].name, input_buffer, sizeof(new_contact[index].name) - 1);
+    new_contact[index].name[sizeof(new_contact[index].name) - 1] = '\0'; // ensuring
 
     // get the phone number
-    char phone_num[15];
     printf("Phone Number: ");
-    fgets(phone_num, sizeof(phone_num), stdin);
-    // scanf("%s", &phone_num);
-    remove_newline(new_contact[index].phone_number);
-    strcpy(new_contact[index].phone_number, phone_num);
+    fgets(input_buffer, sizeof(new_contact[index].phone_number), stdin);
+    remove_newline(input_buffer);
+
+    strncpy(new_contact[index].phone_number, input_buffer, sizeof(new_contact[index].phone_number) - 1);
+    new_contact[index].phone_number[sizeof(new_contact[index].phone_number) - 1] = '\0';
 
     // get the note
-    char note[50];
     printf("Note: ");
-    fgets(note, sizeof(note), stdin);
-    // scanf("%s", &note);
-    remove_newline(new_contact[index].note);
-    strcpy(new_contact[index].note, note);
+    fgets(input_buffer, sizeof(new_contact[index].note), stdin);
+
+    remove_newline(input_buffer);
+
+    strncpy(new_contact[index].note, input_buffer, sizeof(new_contact[index].note) - 1);
+    new_contact[index].note[sizeof(new_contact[index].note) - 1] = '\0';
+
     // some delay just to make it look cool!
-    progress_bar(100);
+    progress_bar(50);
     // Success message!
-    printf("[!] Success, Contact %s has been added!\n", name);
+    printf("[!] Success, Contact %s has been added!\n", new_contact[index].name);
 }
 
 // list Contact
@@ -110,9 +125,46 @@ void list_contact(Contact *contact)
     }
 }
 
+// edit
+void edit_contact(Contact *contact, int count)
+{
+    // first print the contact list for the user
+    // list_contact()
+
+    char input_buffer[INPUT_BUFFER_SIZE];
+    char search_name[50];
+    int contact_index = -1;
+
+    printf("[!] EDIT A CONTACT\n");
+    printf("[!] Enter the name of the contact you wish to eidt: >>>: ");
+
+    // if(fgets(search_name, sizeof(search_name), stdin) == NULL){
+    //     printf("[-] Input error.\n");
+    //     return;
+    // }
+    while(fgets(search_name, sizeof(search_name), stdin) == NULL){
+        printf("[-] Invalid Input. try again\n");
+        // no I want them to try again.
+    }
+    while(search(search_name, sizeof(search_name), stdin) == -1){
+        printf("[-] Error! Contact '%s' not found\n");
+        // I guess we need to clear the search_name to get a new one??
+    }
+    remove_line(search_name);
+    // search for the contact
+    contact_index = search_contact_by_name(contact, count, search_name);
+
+    if(contact_index == -1){
+        
+    }
+}
 int main()
 {
-    Contact contact_array[50];
+
+    Contact contact_array[MAX_CONTACTS];
+    char input_buffer[INPUT_BUFFER_SIZE];
+    int user_input;
+
     // assignID(&contact_array[0]);
     // // printf("GID: %d\n", global_id);
     // strcpy(contact_array[0].name, "James");
@@ -121,28 +173,37 @@ int main()
     // getchar();
 
     int app_running = 1;
-    int user_input;
 
     while (app_running)
     {
         menu();
         printf("(select a number and hit enter) >>>: ");
-        if (scanf("%d", &user_input) != 1)
+
+        if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL)
         {
-            printf("[-] Invalid input! Please enter a number.\n");
-            while (getchar() != '\n')
-                ; // clear invalid input
+            printf("[-] Input error \n");
+            app_running = 0;
             continue;
         }
-        getchar(); // clear newline
+
+        if (sscanf(input_buffer, "%d", &user_input) != 1)
+        {
+            printf("[-] Invalid input! Please enter a number.\n");
+            continue;
+        }
+
         switch (user_input)
         {
         case 1:
             // add contact
             add_contact(contact_array);
             break;
-
+        case 2:
+            // edit contact
+            edit_contact(contact_array, global_id); // passing thte global_id for sake of a clean code
+            break;
         case 5:
+            // contact list
             list_contact(contact_array);
             break;
         case 10:
@@ -153,7 +214,7 @@ int main()
             app_running = 0;
             break;
         default:
-            printf("[-] Invalid option. Please try again.\n");
+            printf("[-] Invalid option. please try again\n");
             break;
         }
     }
