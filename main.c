@@ -1,6 +1,6 @@
+#include "contact_manager.h" // my header
 #include <stdio.h>
 #include <string.h>
-#include "contact_manager.h" // my header
 
 int main()
 {
@@ -9,33 +9,24 @@ int main()
     char input_buffer[INPUT_BUFFER_SIZE];
     int user_input;
 
-    assignID(&contact_array[0]);
-    strncpy(contact_array[0].name, "James", sizeof(contact_array[0].name));
-    strncpy(contact_array[0].note, "James Charles the gay TikToker", sizeof(contact_array[0].note));
-    strncpy(contact_array[0].phone_number, "+1 123 321 123", sizeof(contact_array[0].phone_number));
-
     int app_running = 1;
 
-    while (app_running)
-    {
+    while (app_running) {
         menu();
         printf("(select a number and hit enter) >>>: ");
 
-        if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL)
-        {
+        if (fgets(input_buffer, sizeof(input_buffer), stdin) == NULL) {
             printf("[-] Input error \n");
             app_running = 0;
             continue;
         }
 
-        if (sscanf(input_buffer, "%d", &user_input) != 1)
-        {
+        if (sscanf(input_buffer, "%d", &user_input) != 1) {
             printf("[-] Invalid input! Please enter a number.\n");
             continue;
         }
 
-        switch (user_input)
-        {
+        switch (user_input) {
         case 1:
             // add contact
             add_contact(contact_array);
