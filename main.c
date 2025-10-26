@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "contact_manager.h" // Include your own header
+#include "contact_manager.h" // my header
 
 int main()
 {
@@ -9,9 +9,7 @@ int main()
     char input_buffer[INPUT_BUFFER_SIZE];
     int user_input;
 
-    // Initial setup with a pre-loaded contact
     assignID(&contact_array[0]);
-    // Note: Use strncpy to prevent buffer overflows, although direct string literals are safe here
     strncpy(contact_array[0].name, "James", sizeof(contact_array[0].name));
     strncpy(contact_array[0].note, "James Charles the gay TikToker", sizeof(contact_array[0].note));
     strncpy(contact_array[0].phone_number, "+1 123 321 123", sizeof(contact_array[0].phone_number));
