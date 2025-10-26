@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h> // Used for the Sleep() function in progress_bar
-
+#include <stdbool.h>
 // Global constants and variables
 int global_id = 0;            // id for each contact
 #define MAX_CONTACTS 10       // maximum numbers of contacts allowed!
-#define INPUT_BUFFER_SIZE 100 // Buffer size for robust input
+#define INPUT_BUFFER_SIZE 100 // Buffer size for input
 
 // Contact Struct
 typedef struct
@@ -51,7 +51,7 @@ void menu()
     printf("1. Add Contact\n");
     printf("2. Edit Contact (TODO)\n");
     printf("3. Delete Contact (TODO)\n");
-    printf("4. Search Contact (TODO)\n");
+    printf("4. Search Contact\n");
     printf("5. List Contacts\n");
     printf("0. Exit\n");
 }
@@ -114,6 +114,12 @@ void add_contact(Contact *new_contact)
 // list Contact
 void list_contact(Contact *contact)
 {
+    if (global_id == 0)
+    {
+        printf("[!] COTACT LIST IS EMPTY\n");
+        return;
+    }
+
     printf("[!] CONTACT LIST\n");
     for (int i = 0; i < global_id; i++)
     {
@@ -126,36 +132,117 @@ void list_contact(Contact *contact)
 }
 
 // edit
-void edit_contact(Contact *contact, int count)
+void edit_contact(Contact *contact)
 {
     // first print the contact list for the user
-    // list_contact()
+    list_contact(contact);
 
-    char input_buffer[INPUT_BUFFER_SIZE];
-    char search_name[50];
-    int contact_index = -1;
+    // asking for a name
+    printf("Enter a name >>>: ");
+    char input_buffer[INPUT_BUFFER_SIZE] = {'\0'};
+    fgets(input_buffer, sizeof(input_buffer), stdin);
+    remove_newline(input_buffer);
 
-    printf("[!] EDIT A CONTACT\n");
-    printf("[!] Enter the name of the contact you wish to eidt: >>>: ");
-
-    // if(fgets(search_name, sizeof(search_name), stdin) == NULL){
-    //     printf("[-] Input error.\n");
-    //     return;
-    // }
-    while(fgets(search_name, sizeof(search_name), stdin) == NULL){
-        printf("[-] Invalid Input. try again\n");
-        // no I want them to try again.
+    bool found = false;
+    int contact_index = 0;
+    // seraching for contact
+    for (int i = 0; i <= global_id; i++)
+    {
+        if (strcmp(input_buffer, contact[i].name) == 0)
+        {
+            contact_index = contact[i].id;
+            found = true;
+            break;
+        }
     }
-    while(search(search_name, sizeof(search_name), stdin) == -1){
-        printf("[-] Error! Contact '%s' not found\n");
-        // I guess we need to clear the search_name to get a new one??
-    }
-    remove_line(search_name);
-    // search for the contact
-    contact_index = search_contact_by_name(contact, count, search_name);
+    if (found)
+    {
+        printf("Found: %s | %s | %s\n", contact[contact_index].name, contact[contact_index].phone_number, contact[contact_index].note);
+        printf("Select field to edit: \n");
+        printf("1. Name\n2. Phone\n3. Note\n0. Cancel \n");
 
-    if(contact_index == -1){
-        
+        bool app_running = true;
+
+        while(app_running){
+            printf(">>>: ");
+            fgets(input_buffer, sizeof(input_buffer), stdin);
+            remove_newline(input_buffer);
+            int user_input;
+
+            if (sscanf(input_buffer, "%d", &user_input) != 1)
+            {
+                printf("[-] Invalid input! Please enter a number.\n");
+                continue;
+            }
+
+            switch (user_input)
+            {
+            // edit name
+            case 1:
+                printf("Enter a new name: ");
+                fgets(input_buffer, sizeof(INPUT_BUFFER_SIZE), stdin);
+                remove_newline(input_buffer);
+                strcpy(contact[contact_index].name, input_buffer);
+                // double check
+                if(strcmp(contact[contact_index].name, input_buffer) == 0){
+                    printf("Done %s | %s | %s\n", contact[contact_index].name, contact[contact_index].phone_number, contact[contact_index].note);
+                    progress_bar(50);
+                } else{
+                    printf("There was a problem editing you your name\n");
+                }
+                app_running = false;
+                break;
+            case 10:
+                printf("[!] You've found a secret! nothing happens tho\n");
+                break;
+            case 0:
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    else
+    {
+        printf("[!] Contact %s has not been found\n", input_buffer);
+    }
+}
+
+// search (NOT COMPLETE YET!!)
+void search_contact(Contact *contact)
+{
+    if (global_id == 0)
+    {
+        printf("[!] COTACT LIST IS EMPTY\n");
+        return;
+    }
+    char input_buffer[INPUT_BUFFER_SIZE] = {'\0'};
+
+    int running_app = 1;
+    while (running_app)
+    {
+        printf("Enter a name >>>: ");
+        fgets(input_buffer, sizeof(input_buffer), stdin);
+        remove_newline(input_buffer);
+
+        for (int i = 0; i <= global_id; i++)
+        {
+            // 0 means two strings have zero difference
+            if (strcmp(contact[i].name, input_buffer) == 0)
+            {
+                printf("---------------------------------\n");
+                printf("%d- %s | %s | Note: %s\n",
+                       i + 1, contact[i].name,
+                       contact[i].phone_number, contact[i].note);
+                printf("---------------------------------\n");
+                running_app = 0;
+                break;
+            }
+            else
+            {
+                printf("[!] Contact %s has not been found\n");
+            }
+        }
     }
 }
 int main()
@@ -165,12 +252,11 @@ int main()
     char input_buffer[INPUT_BUFFER_SIZE];
     int user_input;
 
-    // assignID(&contact_array[0]);
-    // // printf("GID: %d\n", global_id);
-    // strcpy(contact_array[0].name, "James");
-    // strcpy(contact_array[0].note, "James Charles the gay TikToker");
-    // strcpy(contact_array[0].phone_number, "+1 123 321 123");
-    // getchar();
+    assignID(&contact_array[0]);
+    // printf("GID: %d\n", global_id);
+    strcpy(contact_array[0].name, "James");
+    strcpy(contact_array[0].note, "James Charles the gay TikToker");
+    strcpy(contact_array[0].phone_number, "+1 123 321 123");
 
     int app_running = 1;
 
@@ -200,7 +286,11 @@ int main()
             break;
         case 2:
             // edit contact
-            edit_contact(contact_array, global_id); // passing thte global_id for sake of a clean code
+            edit_contact(contact_array); // passing thte global_id for sake of a clean code
+            break;
+        case 4:
+            // search contact
+            search_contact(contact_array);
             break;
         case 5:
             // contact list
