@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <windows.h> // Used for the Sleep() function
+#include <windows.h>         // Used for the Sleep() function
 #include "contact_manager.h" // Include your own header
 
 // Initialize the global variables declared in the header file
@@ -34,7 +34,7 @@ void menu()
 {
     printf("\n--- CONTACT MANAGER ---\n");
     printf("1. Add Contact\n");
-    printf("2. Edit Contact (TODO)\n");
+    printf("2. Edit Contact\n");
     printf("3. Delete Contact (TODO)\n");
     printf("4. Search Contact\n");
     printf("5. List Contacts\n");
@@ -137,7 +137,6 @@ void edit_contact(Contact *contact)
     bool found = false;
     int contact_index = -1;
     // seraching for contact
-    // Note: The original loop condition `i <= global_id` was incorrect, it should be `i < global_id`
     for (int i = 0; i < global_id; i++)
     {
         if (strcmp(input_buffer, contact[i].name) == 0)
@@ -155,7 +154,9 @@ void edit_contact(Contact *contact)
 
         bool app_running = true;
 
-        while(app_running){
+        while (app_running)
+        {
+            // ask for input
             printf(">>>: ");
             fgets(input_buffer, sizeof(input_buffer), stdin);
             remove_newline(input_buffer);
@@ -178,12 +179,15 @@ void edit_contact(Contact *contact)
                 // Use strncpy for safety
                 strncpy(contact[contact_index].name, input_buffer, sizeof(contact[contact_index].name) - 1);
                 contact[contact_index].name[sizeof(contact[contact_index].name) - 1] = '\0';
-                
+
                 // double check
-                if(strcmp(contact[contact_index].name, input_buffer) == 0){
+                if (strcmp(contact[contact_index].name, input_buffer) == 0)
+                {
                     printf("Done %s | %s | %s\n", contact[contact_index].name, contact[contact_index].phone_number, contact[contact_index].note);
                     progress_bar(50);
-                } else{
+                }
+                else
+                {
                     printf("There was a problem editing you your name\n");
                 }
                 app_running = false;
@@ -227,10 +231,10 @@ void edit_contact(Contact *contact)
     }
     else
     {
-        printf("[!] Contact %s has not been found\n", input_buffer);
+        printf("[!] Contact %s has not been found. Back to menu!\n", input_buffer);
+        return;
     }
 }
-
 
 // search
 void search_contact(Contact *contact)
@@ -243,7 +247,7 @@ void search_contact(Contact *contact)
     char input_buffer[INPUT_BUFFER_SIZE] = {'\0'};
 
     int found_count = 0;
-    
+
     printf("Enter a name to search >>>: ");
     fgets(input_buffer, sizeof(input_buffer), stdin);
     remove_newline(input_buffer);
@@ -261,12 +265,81 @@ void search_contact(Contact *contact)
             found_count++;
             // Don't break here if you want to find all matches (though IDs should be unique)
             // If only searching for a perfect match of the primary name, breaking is fine.
-            break; 
+            break;
         }
     }
-    
+
     if (found_count == 0)
     {
         printf("[!] Contact \"%s\" has not been found\n", input_buffer);
+    }
+}
+
+// delete
+
+void delete_contact(Contact *contact)
+{
+    // in case of no contact
+    if (global_id == 0)
+    {
+        printf("[!] COTACT LIST IS EMPTY. Cannot delete.\n");
+        return;
+    }
+
+    // see the list first
+    list_contact(contact);
+
+    // asking for a name
+    printf("Enter a name >>>: ");
+    char input_buffer[INPUT_BUFFER_SIZE] = {'\0'};
+    fgets(input_buffer, sizeof(input_buffer), stdin);
+    remove_newline(input_buffer);
+
+    bool found = false;
+    int contact_index = -1;
+    // seraching for contact
+    for (int i = 0; i < global_id; i++)
+    {
+        if (strcmp(input_buffer, contact[i].name) == 0)
+        {
+            contact_index = contact[i].id; // Assuming contact[i].id is the correct index for editing
+            found = true;
+            break;
+        }
+    }
+    if (found)
+    {
+        // asking for delete confirm
+        printf("Are you sure you want to delete contact %s? (Y/N)\n", contact[contact_index].name);
+        char input_buffer[INPUT_BUFFER_SIZE] = {'\0'};
+        fgets(input_buffer, sizeof(input_buffer), stdin);
+        remove_newline(input_buffer);
+
+        // if its confirmed, works for Y and y
+        if (strcmp(input_buffer, "Y") || strcmp(input_buffer, "y"))
+        {
+            // erase name
+            strncpy(contact[contact_index].name, "DELETED_CONTACT", sizeof(contact[contact_index].name));
+            contact[contact_index].name[sizeof(contact[contact_index].name) - 1] = '\0';
+            // erase phone
+            strncpy(contact[contact_index].phone_number, "DELETED_CONTACT", sizeof(contact[contact_index].phone_number));
+            contact[contact_index].phone_number[sizeof(contact[contact_index].phone_number) - 1] = '\0';
+            // erase note
+            strncpy(contact[contact_index].note, "DELETED_CONTACT", sizeof(contact[contact_index].note));
+            contact[contact_index].note[sizeof(contact[contact_index].note) - 1] = '\0';
+            printf("Done. back to main menu\n");
+            return;
+            // if its not confirmed, works for N and n
+        }
+        else if (strcmp(input_buffer, "N") || strcpy(input_buffer, "n"))
+        {
+            printf("Canceled. back to main menu\n");
+            return;
+        }
+        else
+        {
+            printf("Invalid Input. back to main menu\n");
+            return;
+        }
     }
 }

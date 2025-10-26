@@ -30,5 +30,5 @@ void add_contact(Contact *new_contact);
 void list_contact(Contact *contact);
 void edit_contact(Contact *contact);
 void search_contact(Contact *contact);
-
+void delete_contact(Contact *contact);
 #endif // CONTACT_MANAGER_H

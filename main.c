@@ -45,8 +45,8 @@ int main()
             edit_contact(contact_array);
             break;
         case 3:
-            // delete contact (TODO)
-            printf("[!] Delete functionality is not yet implemented.\n");
+            // delete contact
+            delete_contact(contact_array);
             break;
         case 4:
             // search contact
